@@ -3,6 +3,7 @@ package edu.grinnell.csc207.spellchecker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,38 +27,104 @@ public class SpellChecker {
 
     /** A Node of the SpellChecker structure. */
     private class Node {
-        // TODO: implement me!
+        ArrayList<Node> nodeArray;
+        ArrayList<Character> charArray;
+        boolean endsWord;
+        char curChar;
+
+        public Node(char curChar) {
+            nodeArray = new ArrayList<>();
+            charArray = new ArrayList<>();
+            this.curChar = curChar;
+            endsWord = false;
+        }
     }
 
     /** The root of the SpellChecker */
     private Node root;
 
     public SpellChecker(List<String> dict) {
-        // TODO: implement me!
+        root = new Node('.');
+        for(int i = 0; i < dict.size(); i++) {
+            add(dict.get(i));
+        }
     }
 
     public void add(String word) {
-        // TODO: implement me!
+        Node cur = root;
+        for(int i =0; i < word.length(); i++) {
+            if(cur.charArray.contains(word.charAt(i))) {
+                cur = cur.nodeArray.get(cur.charArray.indexOf(word.charAt(i)));
+            } else {
+                Node n = new Node(word.charAt(i));
+                cur.charArray.add(word.charAt(i));
+                cur.nodeArray.add(n);
+                cur = n;
+            }
+        }
+        cur.endsWord = true;
     }
 
     public boolean isWord(String word) {
-        // TODO: implement me!
-        return false;
+        int i = 0;
+        Node cur = root;
+        while (i < word.length() && cur.charArray.contains(word.charAt(i))) {
+            cur = cur.nodeArray.get(cur.charArray.indexOf(word.charAt(i)));
+            i++;
+        }
+        if (i < word.length()) {
+            return false; 
+        } else {
+            return true;
+        }
     }
 
     public List<String> getOneCharCompletions(String word) {
-        // TOOD: implement me!
-        return null;
+        ArrayList<String> output = new ArrayList<>();
+        int i = 0;
+        Node cur = root;
+        while (i < word.length() && cur.charArray.contains(word.charAt(i))) {
+            cur = cur.nodeArray.get(cur.charArray.indexOf(word.charAt(i)));
+            i++;
+        }
+       for(int j = 0; j < cur.nodeArray.size(); j++) {
+            if(cur.nodeArray.get(j).endsWord) {
+                output.add(word + cur.charArray.get(j));
+            }
+       }
+       return output;
     }
 
     public List<String> getOneCharEndCorrections(String word) {
-        // TODO: implement me!
-        return null;
+        ArrayList<String> output = new ArrayList<>();
+        int i = 0;
+        Node cur = root;
+        while (i < word.length() - 1 && cur.charArray.contains(word.charAt(i))) {
+            cur = cur.nodeArray.get(cur.charArray.indexOf(word.charAt(i)));
+            i++;
+        }
+       for(int j = 0; j < cur.nodeArray.size(); j++) {
+            if(cur.nodeArray.get(j).endsWord) {
+                output.add(word.substring(0, word.length() - 1) + cur.charArray.get(j));
+            }
+       }
+       return output;
     }
 
     public List<String> getOneCharCorrections(String word) {
-        // TODO: implement me!
-        return null;
+        ArrayList<String> output = new ArrayList<>();
+        int i = 0;
+        Node cur = root;
+        while (i < word.length() && cur.charArray.contains(word.charAt(i))) {
+            cur = cur.nodeArray.get(cur.charArray.indexOf(word.charAt(i)));
+            i++;
+        }
+       for(int j = 0; j < cur.nodeArray.size(); j++) {
+            if(cur.nodeArray.get(j).endsWord) {
+                output.add(word.substring(0, i) + cur.charArray.get(j) + word.substring(i + 1, word.length()));
+            }
+       }
+       return output;
     }
 
     public static void main(String[] args) throws IOException {
@@ -83,7 +150,7 @@ public class SpellChecker {
                 }
 
                 case "correct": {
-                    List<String> corrections = checker.getOneCharEndCorrections(word);
+                    List<String> corrections = checker.getOneCharCorrections(word);
                     for (String correction : corrections) {
                         System.out.println(correction);
                     }
